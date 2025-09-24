@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { LuLoader } from "react-icons/lu";
 
 export default function SignupPage() {
 
@@ -16,7 +17,7 @@ export default function SignupPage() {
         email: "",
         password: "",
     });
-    // const [buttonDisabled, setButtonDisabled] = useState(false);
+    const [buttonDisabled, setButtonDisabled] = useState(true);
     const [loading, setLoading] = useState(true);
 
     const departments = ['A', 'B', 'C', 'D'];
@@ -33,10 +34,19 @@ export default function SignupPage() {
         e.preventDefault();
 
         try {
+            setButtonDisabled(true);
             setLoading(true);
 
             const response = await axios.post('/api/users/signup', formData);
             console.log("Signup success", response.data);
+            setFormData({
+                firstName: "",
+                lastName: "",
+                department: "",
+                role: "",
+                email: "",
+                password: "",
+            });
             router.push('/login');
         } catch (error: any) {
             console.log("Signup failed!", error);
@@ -44,6 +54,14 @@ export default function SignupPage() {
             setLoading(false);
         }
     }
+
+    useEffect(() => {
+        if (formData.firstName.length > 0 && formData.lastName.length > 0 && formData.department && formData.role && formData.email.length > 0 && formData.password.length > 0) {
+            setButtonDisabled(false);
+        } else {
+            setButtonDisabled(true);
+        }
+    }, [formData]);
 
     return (
         <div className="w-full min-h-screen flex items-center justify-center bg-white dark:bg-black transition-colors font-mono">
@@ -122,9 +140,13 @@ export default function SignupPage() {
 
                     <button
                         type="submit"
-                        className="px-4 py-2 w-50 mx-auto mt-8 rounded-md bg-blue-100 dark:bg-slate-800 hover:bg-blue-500 hover:text-white transition-all"
+                        className={
+                            `px-4 py-2 w-50 mx-auto mt-8 rounded-md bg-blue-100 dark:bg-slate-800 transition-all
+                            ${buttonDisabled ? "opacity-50" : "hover:bg-blue-500 hover:text-white"}`
+                        }
+                        disabled={buttonDisabled}
                     >
-                        Sign Up
+                        {loading ? "Sign Up" : <LuLoader className="animate-spin mx-auto" />}
                     </button>
                 </form>
 

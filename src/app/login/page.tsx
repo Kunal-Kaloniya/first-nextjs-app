@@ -2,7 +2,8 @@
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { LuLoader } from "react-icons/lu";
 
 export default function LoginPage() {
 
@@ -12,6 +13,7 @@ export default function LoginPage() {
         email: "",
         password: "",
     });
+    const [buttonDisabled, setButtonDisabled] = useState(true);
     const [loading, setLoading] = useState(true);
 
     const handleChange = (e: any) => {
@@ -26,9 +28,14 @@ export default function LoginPage() {
 
         try {
             setLoading(true);
-            
+            setButtonDisabled(true);
+
             const response = await axios.post('/api/users/login', formData);
-            console.log("Signup success", response.data);
+            console.log("Login success", response.data);
+            setFormData({
+                email: "",
+                password: ""
+            });
             router.push('/dashboard');
         } catch (error: any) {
             console.log("Login failed! ", error);
@@ -36,6 +43,14 @@ export default function LoginPage() {
             setLoading(false);
         }
     }
+
+    useEffect(() => {
+        if (formData.email.length > 0 && formData.password.length > 0) {
+            setButtonDisabled(false);
+        } else {
+            setButtonDisabled(true);
+        }
+    }, [formData]);
 
     return (
         <div className="w-full min-h-screen flex items-center justify-center bg-white dark:bg-black transition-colors font-mono">
@@ -65,9 +80,13 @@ export default function LoginPage() {
 
                     <button
                         type="submit"
-                        className="px-4 py-2 w-50 mx-auto mt-8 rounded-md bg-green-100 dark:bg-[#002a00] hover:bg-green-500 hover:text-white transition-all"
+                        className={
+                            `px-4 py-2 w-50 mx-auto mt-8 rounded-md bg-green-100 dark:bg-[#002a00] transition-all
+                            ${buttonDisabled ? "opacity-50" : "hover:bg-green-500 hover:text-white"}`
+                        }
+                        disabled={buttonDisabled}
                     >
-                        Login
+                        {loading ? "Login" : <LuLoader className="animate-spin mx-auto" />}
                     </button>
                 </form>
 
